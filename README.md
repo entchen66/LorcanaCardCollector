@@ -120,5 +120,3 @@ This project is licensed under the [MIT License](LICENSE).
 - Ravensburger for the official Lorcana API.
 
 **Disclaimer:** This project is not affiliated with Disney Lorcana or Ravensburger.
-
-# End of README
