@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 # Globale Einstellungen
 DEBUG = True
 LANGUAGES = ["en"]#, "de", "fr", "it"]
-CHAPTERS = ["001", "002", "003", "004", "005", "P1", "P2", "C1", "D23"]
+CHAPTERS = ["001", "002", "003", "004", "005", "006"]
+SPECIAL_CHAPTERS = ["P1", "P2", "C1", "D23"]
 VARIANTS = ["a", "b", "c", "d", "e", "f"]
 CARDS_WITH_VARIANTS = [(("003", 4), 5)]
 ColorType = namedtuple("ColorType", ["name", "color"])
@@ -70,7 +71,7 @@ def load_my_card_collection_from_chapters():
 
     dict_all_chapters = {}
 
-    for chapter in CHAPTERS:
+    for chapter in CHAPTERS + SPECIAL_CHAPTERS:
         dict_all_chapters[chapter] = {}
 
     for entry in json_objekts:
@@ -589,19 +590,14 @@ MY_COLLECTION = load_my_card_collection_from_chapters()
 # Gehe durch jede Sprache und jedes Kapitel und führe die Funktion für jede Farbe aus
 for lang in LANGUAGES:
     chapters_dir = os.path.join(BASE_DIR, lang, "png")
-    merge_cards(lang, (176, 192, 116), 9, "P_P1", True, ["P1"])
-    merge_cards(lang, (176, 192, 116), 9, "P_P2", True, ["P2"])
-    merge_cards(lang, (176, 192, 116), 9, "P_C1", True, ["C1"])
-    merge_cards(lang, (176, 192, 116), 9, "P_D23", True, ["D23"])
+    for set_name in SPECIAL_CHAPTERS:
+        merge_cards(lang, (176, 192, 116), 9, f"P_{set_name}", True, [set_name])
     for ct in CARD_TYPES:
-        merge_cards_for_color(lang, ct.name, ct.color, 9, "001", True, ["001"])
-        merge_cards_for_color(lang, ct.name, ct.color, 9, "002", True, ["002"])
-        merge_cards_for_color(lang, ct.name, ct.color, 9, "003", True, ["003"])
-        merge_cards_for_color(lang, ct.name, ct.color, 9, "004", True, ["004"])
-        merge_cards_for_color(lang, ct.name, ct.color, 9, "005", True, ["005"])
+        for set_name in CHAPTERS:
+            merge_cards_for_color(lang, ct.name, ct.color, 9, set_name, True, [set_name])
         pass
     for rarity in CARD_RARITY:
         if rarity[0] == "SP":
-            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity[0]}", ["P1", "P2", "C1", "D23"], rarity[0])
+            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity[0]}", SPECIAL_CHAPTERS, rarity[0])
         else:
-            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity[0]}", ["001", "002", "003", "004", "005"], rarity[0])
+            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity[0]}", CHAPTERS, rarity[0])
