@@ -185,7 +185,7 @@ def fill_card_catalog():
                 card_image = download_image(card_data.high_res_image)
                 save_image(
                     os.path.join("cards", lang, "webp", card_data.set_id),
-                    f"{card_data.id}_{'_'.join(card_data.magic_ink_colors)}_{CARD_RARITY.get(card_data.rarity, 'XX')}_{card_data.card_type}",
+                    f"{card_data.id}_{'&'.join(card_data.magic_ink_colors)}_{CARD_RARITY.get(card_data.rarity, 'XX')}_{card_data.card_type}",
                     card_image,
                     "webp"
                 )

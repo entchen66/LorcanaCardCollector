@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 # Global Settings
 DEBUG = True
 LANGUAGES = ["en"]  # Add "de", "fr", "it" if needed
-CHAPTERS = ["001", "002", "003", "004", "005", "006"]
+CHAPTERS = ["001", "002", "003", "004", "005", "006", "007"]
 SPECIAL_CHAPTERS = ["P1", "P2", "C1", "D23"]
 VARIANTS = ["a", "b", "c", "d", "e", "f"]
 CARDS_WITH_VARIANTS = [(("003", 4), 5)]
@@ -30,6 +30,7 @@ CHAPTER_NAMES = {
     "004": "4 - Ursula's Return",
     "005": "5 - Shimmering Skies",
     "006": "6 - Azurite Sea",
+    "007": "7 - Archazia's Island",
     "C1": "Lorcana Challenge 1",
     "P1": "Promo Cards Year 1",
     "P2": "Promo Cards Year 2",
@@ -83,7 +84,7 @@ def load_my_card_collection_from_chapters():
             "name": entry["Name"],
             "normal": entry["Normal"],
             "foil": entry["Foil"],
-            "color": entry["Color"],
+            "color": entry["Color"].split(" ")[0],
         }
         entry["Card Number"] = entry["Card Number"].replace("P", "")
         if entry["Card Number"].isdigit():  # Check for variants
