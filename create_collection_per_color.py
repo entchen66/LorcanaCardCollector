@@ -122,7 +122,8 @@ def get_card_color_from_filename(filename):
     """Extract the card color from the filename."""
     parts = filename.split('.')[0].split('_')
     if len(parts) >= 2:
-        return parts[1]
+        colors = parts[1].split("&")
+        return colors
     return None
 
 
@@ -409,7 +410,8 @@ def merge_cards_for_color(lang, color, color_rgb, img_per_row, generate_name, ma
     """Merge cards of a specific color into a single image."""
 
     def filter_func(img_filename):
-        return color.lower() in img_filename.lower()
+        colors_of_card = get_card_color_from_filename(img_filename)
+        return color.lower() == colors_of_card[0].lower()
 
     process_images(lang, chapter_list, filter_func, f"{generate_name}_{color}", img_per_row, color_rgb, mark_completed)
 
