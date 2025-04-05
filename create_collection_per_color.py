@@ -13,6 +13,12 @@ VARIANTS = ["a", "b", "c", "d", "e", "f"]
 CARDS_WITH_VARIANTS = [(("003", 4), 5)]
 ColorType = namedtuple("ColorType", ["name", "color"])
 
+MULTICOLOR_ASSIGNMENTS = {}
+temp_help_filtering = []
+temp_multicolor_per_set = {}
+for i in CHAPTERS:
+    temp_multicolor_per_set[i] = 0
+
 CARD_TYPES = [
     ColorType("amber", (211, 149, 45)),  # Yellow
     ColorType("amethyst", (155, 89, 182)),  # Purple
@@ -84,7 +90,9 @@ def load_my_card_collection_from_chapters():
             "name": entry["Name"],
             "normal": entry["Normal"],
             "foil": entry["Foil"],
-            "color": entry["Color"].split(" ")[0],
+            "color": entry["Color"].split(" "),
+            "rarity": entry["Rarity"],
+            "multicolor": True if len(entry["Color"].split(" ")) > 1 and entry["Rarity"] != "Verzaubert" else False,
         }
         entry["Card Number"] = entry["Card Number"].replace("P", "")
         if entry["Card Number"].isdigit():  # Check for variants
@@ -92,7 +100,71 @@ def load_my_card_collection_from_chapters():
         else:
             card_num = str(entry["Card Number"]).zfill(4)
         dict_all_chapters[entry["Set"]][card_num] = card_dict
+    # Fill temp_multicolor_per_set with multicolor cards
+    for chapter in CHAPTERS:
+        count = 0
+        for v in dict_all_chapters[chapter].values():
+            if v["multicolor"]:
+                print(v["rarity"])
+                count += 1
+        temp_multicolor_per_set[chapter] = count
     return dict_all_chapters
+
+
+def calculate_multicolor_assignments(collection):
+    """
+    Calculates which color image each multicolor card should belong to
+    to ensure even distribution. Populates the global MULTICOLOR_ASSIGNMENTS dict.
+    Excludes Enchanted ("EE") rarity.
+    """
+    global MULTICOLOR_ASSIGNMENTS
+    MULTICOLOR_ASSIGNMENTS = {}  # Reset assignments
+
+    cards_by_combo = {}  # Key: (chapter, tuple(sorted_colors)), Value: list of card_numbers
+
+    # --- Gather all non-enchanted multicolor cards per chapter and color pair ---
+    for chapter, cards in collection.items():
+        if chapter not in CHAPTERS:  # Focus on main chapters for now, adjust if needed
+            continue
+        for card_num, card_info in cards.items():
+            # Use the 'multicolor' flag already calculated, but double-check rarity
+            # Also ensure the 'color' field is a list
+            is_multi = card_info.get("multicolor", False)
+            rarity = card_info.get("rarity", "").upper()  # Normalize rarity check
+            colors = card_info.get("color", [])
+
+            # Skip Enchanted and non-multicolor cards
+            if rarity == "EE" or not is_multi or len(colors) < 2:
+                continue
+
+            # Create a consistent key for the color pair (sorted tuple)
+            color_pair = tuple(sorted([c.lower() for c in colors]))
+
+            combo_key = (chapter, color_pair)
+            if combo_key not in cards_by_combo:
+                cards_by_combo[combo_key] = []
+            cards_by_combo[combo_key].append(card_num)
+
+    # --- Assign cards within each combo group ---
+    for (chapter, color_pair), card_numbers in cards_by_combo.items():
+        # Sort card numbers for deterministic assignment
+        sorted_card_numbers = sorted(card_numbers)
+        num_cards = len(sorted_card_numbers)
+        split_point = num_cards // 2  # Integer division
+
+        color1, color2 = color_pair  # Colors are already sorted alphabetically
+
+        # Assign first half to color1, second half to color2
+        for i, card_num in enumerate(sorted_card_numbers):
+            assignment_key = (chapter, card_num)
+            if i < split_point:
+                MULTICOLOR_ASSIGNMENTS[assignment_key] = color1
+            else:
+                MULTICOLOR_ASSIGNMENTS[assignment_key] = color2
+
+        if DEBUG:
+            print(f"Assigned {split_point} cards of {color_pair} in {chapter} to {color1}")
+            print(f"Assigned {num_cards - split_point} cards of {color_pair} in {chapter} to {color2}")
 
 
 def round_corners(im, rad):
@@ -406,14 +478,17 @@ def merge_cards(lang, color_rgb, img_per_row, generate_name, mark_completed, cha
     process_images(lang, chapter_list, filter_func, generate_name, img_per_row, color_rgb, mark_completed)
 
 
-def merge_cards_for_color(lang, color, color_rgb, img_per_row, generate_name, mark_completed, chapter_list):
+def merge_cards_for_color(lang, merge_color, color_rgb, img_per_row, generate_name, mark_completed, chapter_list):
     """Merge cards of a specific color into a single image."""
 
     def filter_func(img_filename):
-        colors_of_card = get_card_color_from_filename(img_filename)
-        return color.lower() == colors_of_card[0].lower()
+        colors_of_card = []
+        for card_color in get_card_color_from_filename(img_filename):
+            colors_of_card.append(card_color.lower())
+        return merge_color.lower() in colors_of_card
+        return merge_color.lower() == colors_of_card[0].lower()
 
-    process_images(lang, chapter_list, filter_func, f"{generate_name}_{color}", img_per_row, color_rgb, mark_completed)
+    process_images(lang, chapter_list, filter_func, f"{generate_name}_{merge_color}", img_per_row, color_rgb, mark_completed)
 
 
 def merge_cards_missing_for_playset(lang, img_per_row, generate_name, chapter_list=CHAPTERS, rarity=None):
@@ -566,21 +641,23 @@ def merge_cards_missing_for_playset(lang, img_per_row, generate_name, chapter_li
 
 # Load your card collection
 MY_COLLECTION = load_my_card_collection_from_chapters()
+print(temp_multicolor_per_set)
 
 # Process cards for each language
 for lang in LANGUAGES:
     # Merge special chapters
-    for set_name in SPECIAL_CHAPTERS:
-        merge_cards(lang, (176, 192, 116), 9, f"P_{set_name}", True, [set_name])
+    #    for set_name in SPECIAL_CHAPTERS:
+    #        merge_cards(lang, (176, 192, 116), 9, f"P_{set_name}", True, [set_name])
 
     # Merge cards by color for each chapter
     for ct in CARD_TYPES:
-        for set_name in CHAPTERS:
-            merge_cards_for_color(lang, ct.name, ct.color, 9, set_name, True, [set_name])
+        #        for set_name in CHAPTERS:
+        #            merge_cards_for_color(lang, ct.name, ct.color, 9, set_name, True, [set_name])
+        merge_cards_for_color(lang, ct.name, ct.color, 9, "007", True, ["007"])
 
-    # Merge missing cards for playset completion
-    for rarity in CARD_RARITY:
-        if rarity.name == "SP":
-            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity.name}", SPECIAL_CHAPTERS, rarity.name)
-        else:
-            merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity.name}", CHAPTERS, rarity.name)
+    # # Merge missing cards for playset completion
+    # for rarity in CARD_RARITY:
+    #     if rarity.name == "SP":
+    #         merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity.name}", SPECIAL_CHAPTERS, rarity.name)
+    #     else:
+    #         merge_cards_missing_for_playset(lang, 9, f"x_missing_{rarity.name}", CHAPTERS, rarity.name)
