@@ -23,7 +23,7 @@ CARD_RARITY = {
 }
 
 LANGUAGES = [
-    # "de",
+    "de",
     "en",
     # "fr",
     # "it",
