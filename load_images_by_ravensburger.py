@@ -18,7 +18,9 @@ CARD_RARITY = {
     "RARE": "RR",  # Rare
     "SUPER": "SR",  # Super Rare
     "LEGENDARY": "LL",  # Legendary
+    "EPIC": "EP",  # Epic
     "ENCHANTED": "EE",  # Enchanted
+    "ICONIC": "IC",  # Iconic
     "SPECIAL": "SP",  # Promo and others
 }
 

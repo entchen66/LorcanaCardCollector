@@ -10,11 +10,11 @@ from PIL import Image, ImageDraw, ImageFont
 DEBUG = True
 SAVE_AS = ["png", "webp", "jpg"]
 LANGUAGES = ["en"]  # Add "de", "fr", "it" if needed
-CHAPTERS = ["001", "002", "003", "004", "005", "006", "007"]
-# Combine all known set codes for easier checking
-ALL_SETS = CHAPTERS + ["P1", "P2", "C1", "D23", "1TFC"]  # Added 1TFC based on filename example
+CHAPTERS = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"]
 # Define which sets are considered 'special' if different logic applies beyond key generation
 SPECIAL_CHAPTERS = ["P1", "P2", "C1", "D23", "1TFC"]
+# Combine all known set codes for easier checking
+ALL_SETS = CHAPTERS + SPECIAL_CHAPTERS  # Added 1TFC based on filename example
 ColorType = namedtuple("ColorType", ["name", "color"])
 
 # Global dictionary to store multicolor card assignments
@@ -30,15 +30,19 @@ CARD_TYPES_ORDER = [ct.name for ct in CARD_TYPES]
 CHAPTER_NAMES = {
     "001": "1 - The First Chapter", "002": "2 - Rise of the Floodborn", "003": "3 - Into the Inklands",
     "004": "4 - Ursula's Return", "005": "5 - Shimmering Skies", "006": "6 - Azurite Sea",
-    "007": "7 - Archazia's Island", "C1": "Lorcana Challenge 1", "P1": "Promo Cards Year 1",
-    "P2": "Promo Cards Year 2", "Q1": "Ursula's quest", "D23": "Disney D23", "1TFC": "The First Chapter Promos?",  # Assign name
+    "007": "7 - Archazia's Island", "008": "Reign of Jafar", "009": "Fabled",
+    "010": "Whispers in the Well",
+    "C1": "Lorcana Challenge 1",
+    "P1": "Promo Cards Year 1", "P2": "Promo Cards Year 2",
+    "Q1": "Deep Trouble", "Q2": "Illumineer's Quest: Palace Heist",
+    "D23": "Disney D23", "1TFC": "The First Chapter Promos?",  # Assign name
 }
 CARD_RARITY = [
-    ColorType("CC", (168, 166, 169)), ColorType("UC", (255, 255, 255)), ColorType("RR", (179, 91, 48)),
-    ColorType("SR", (198, 198, 200)), ColorType("LL", (219, 192, 89)), ColorType("EE", (176, 192, 116)),
+    ColorType("CC", (168, 166, 169)), ColorType("UC", (255, 255, 255)), ColorType("RR", (179, 91, 48)), ColorType("SR", (198, 198, 200)), ColorType("LL", (219, 192, 89)),
+    ColorType("EP", (176, 192, 116)), ColorType("EE", (176, 192, 116)), ColorType("IC", (176, 192, 116)),
     ColorType("SP", (0, 0, 0)),
 ]
-CARD_RARITY_ORDER = ["CC", "UC", "RR", "SR", "LL", "EE", "SP"]
+CARD_RARITY_ORDER = ["CC", "UC", "RR", "SR", "LL", "EP", "EE", "IC", "SP"]
 
 # Constants
 SCALING = 1
